@@ -1,0 +1,89 @@
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; 
+  color: black;
+  text-align: center;
+  padding: 20px; 
+  font-family: 'Arial', sans-serif; 
+}
+
+.welcome-container .navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.welcome-container .navbar .logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.welcome-container .navbar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+.welcome-container .navbar li {
+  margin-left: 20px;
+}
+
+.welcome-container .navbar a {
+  text-decoration: none;
+  color: white;
+  transition: color 0.3s ease;
+}
+
+.welcome-container .navbar a:hover {
+  color: #f8f9fa;
+}
+
+.welcome-container h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-container p {
+  font-size: 20px;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.welcome-container .btn {
+  padding: 12px 24px;
+  background-color: white;
+  color: #007bff;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-container .btn:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.05);
+}
+
+.welcome-container .btn:active {
+  transform: scale(0.95);
+}
+
+.footer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
