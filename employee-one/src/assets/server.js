@@ -3,7 +3,6 @@ import mysql from 'mysql';
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-
 const app = express();
 const port = 5002;
 app.use(cors());

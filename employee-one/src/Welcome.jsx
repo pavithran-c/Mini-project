@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Wel.css';
+
 const Welcome = () => {
+  useEffect(() => {
+    // Add class to body on mount
+    document.body.classList.add('welcome-page');
+
+    // Cleanup function to remove class on unmount
+    return () => {
+      document.body.classList.remove('welcome-page');
+    };
+  }, []);
+
   return (
     <div className="welcome-container">
-      <nav className="navbar">
-        <div className="logo">EMS</div>
-      </nav>
-
       <div className="hero-section">
         <div className="hero-text">
           <h1>Welcome to Employee Management System</h1>

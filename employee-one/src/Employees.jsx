@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AddEmployeeForm from './AddEmployeeForm';
+import './EmployeeList.css';
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true); // Added loading state
-  const [error, setError] = useState(null); // Added error state
-  const [newEmployee, setNewEmployee] = useState({
-    employeeId: '',
-    name: '',
-    position: '',
-    basicPay: '',
-    allowances: '',
-    deductions: '',
-    hoursWorked: ''
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('name');
+  const [showAddEmployeeIframe, setShowAddEmployeeIframe] = useState(false);
+  const [showUpdateEmployeeIframe, setShowUpdateEmployeeIframe] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -22,36 +18,29 @@ const EmployeeList = () => {
   const fetchEmployees = async () => {
     try {
       const response = await axios.get('http://localhost:5000/employees');
-      console.log('Fetched Employees:', response.data); // Debugging log
       setEmployees(response.data);
     } catch (error) {
-      console.error('Error fetching employees:', error);
-      setError('Failed to fetch employees'); // Set error message
-    } finally {
-      setLoading(false); // Set loading to false when done
+      console.error('Failed to fetch employees:', error);
     }
   };
 
-  const addEmployee = async (e) => {
-    e.preventDefault();
-
-    // Convert values to numbers and check for NaN
-    const basicPay = Number(newEmployee.basicPay);
-    const hoursWorked = Number(newEmployee.hoursWorked);
-    const allowances = Number(newEmployee.allowances);
-    const deductions = Number(newEmployee.deductions);
-    
-    if (isNaN(basicPay) || isNaN(hoursWorked) || isNaN(allowances) || isNaN(deductions)) {
-      alert('Please enter valid numbers for salary components.');
-      return;
-    }
-
+  const addEmployee = async (newEmployee) => {
     try {
-      await axios.post('http://localhost:5000/employees', { ...newEmployee, basicPay, hoursWorked, allowances, deductions });
+      await axios.post('http://localhost:5000/employees', newEmployee);
       fetchEmployees();
-      setNewEmployee({ employeeId: '', name: '', position: '', basicPay: '', allowances: '', deductions: '', hoursWorked: '' });
+      closeIframe();
     } catch (error) {
-      console.error(error.response.data.message);
+      console.error('Error adding employee:', error);
+    }
+  };
+
+  const updateEmployee = async (id, updatedData) => {
+    try {
+      await axios.put(`http://localhost:5000/employees/${id}`, updatedData);
+      fetchEmployees();
+      closeIframe();
+    } catch (error) {
+      console.error('Error updating employee:', error);
     }
   };
 
@@ -64,41 +53,110 @@ const EmployeeList = () => {
     }
   };
 
-  if (loading) {
-    return <div>Loading employees...</div>; // Loading state
-  }
+  const openUpdateIframe = (employee) => {
+    setSelectedEmployee(employee);
+    setShowUpdateEmployeeIframe(true);
+  };
 
-  if (error) {
-    return <div>{error}</div>; // Error message
-  }
+  const closeIframe = () => {
+    setShowAddEmployeeIframe(false);
+    setShowUpdateEmployeeIframe(false);
+    setSelectedEmployee(null); // Reset selected employee
+  };
+
+  const handleFilterChange = (e) => {
+    setFilterType(e.target.value);
+    setSearchTerm('');
+  };
+
+  const filteredEmployees = employees.filter((employee) => {
+    const valueToFilter = employee[filterType]?.toString().toLowerCase();
+    return valueToFilter && valueToFilter.includes(searchTerm.toLowerCase());
+  });
 
   return (
-    <div>
-      <h2>Employee List</h2>
-      {employees.length === 0 ? ( // Conditional rendering for empty list
-        <p>No employees found.</p>
-      ) : (
-        <ul>
-          {employees.map(employee => (
-            <li key={employee._id}>
-              {employee.employeeId} - {employee.name} - {employee.position} - Salary: ${employee.totalSalary}
-              <button onClick={() => deleteEmployee(employee._id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+    <div className="employee-list">
+      <h2>Employee Management</h2>
+
+      <div className="filter-container">
+        <select value={filterType} onChange={handleFilterChange} className="filter-select">
+          <option value="name">Name</option>
+          <option value="position">Position</option>
+          <option value="employeeId">Employee ID</option>
+        </select>
+        <input
+          type="text"
+          placeholder={`Search by ${filterType}`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="filter-input"
+        />
+      </div>
+
+      <table className="employee-table">
+        <thead>
+          <tr>
+            <th>Employee ID</th>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Basic Pay</th>
+            <th>Allowances</th>
+            <th>Hours Worked</th>
+            <th>Total Salary</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredEmployees.length > 0 ? (
+            filteredEmployees.map((employee) => (
+              <tr key={employee._id}>
+                <td>{employee.employeeId}</td>
+                <td>{employee.name}</td>
+                <td>{employee.position}</td>
+                <td>${employee.basicPay}</td>
+                <td>${employee.allowances}</td>
+                <td>{employee.hoursWorked} hrs</td>
+                <td>${employee.totalSalary}</td>
+                <td>
+                  <button onClick={() => openUpdateIframe(employee)}>Update</button>
+                  <button onClick={() => deleteEmployee(employee._id)}>Delete</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="8">No employees found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      <button className="add-employee-button" onClick={() => setShowAddEmployeeIframe(true)}>
+        Add Employee
+      </button>
+
+      {showAddEmployeeIframe && (
+        <div className="iframe-overlay">
+          <div className="iframe-container">
+            <button className="close-button" onClick={closeIframe}>✖</button>
+            <AddEmployeeForm onAddEmployee={addEmployee} onClose={closeIframe} />
+          </div>
+        </div>
       )}
 
-      <h3>Add New Employee</h3>
-      <form onSubmit={addEmployee}>
-        <input type="text" name="employeeId" value={newEmployee.employeeId} onChange={e => setNewEmployee({ ...newEmployee, employeeId: e.target.value })} placeholder="Employee ID" required />
-        <input type="text" name="name" value={newEmployee.name} onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} placeholder="Name" required />
-        <input type="text" name="position" value={newEmployee.position} onChange={e => setNewEmployee({ ...newEmployee, position: e.target.value })} placeholder="Position" required />
-        <input type="number" name="basicPay" value={newEmployee.basicPay} onChange={e => setNewEmployee({ ...newEmployee, basicPay: e.target.value })} placeholder="Basic Pay" required />
-        <input type="number" name="allowances" value={newEmployee.allowances} onChange={e => setNewEmployee({ ...newEmployee, allowances: e.target.value })} placeholder="Allowances" required />
-        <input type="number" name="deductions" value={newEmployee.deductions} onChange={e => setNewEmployee({ ...newEmployee, deductions: e.target.value })} placeholder="Deductions" required />
-        <input type="number" name="hoursWorked" value={newEmployee.hoursWorked} onChange={e => setNewEmployee({ ...newEmployee, hoursWorked: e.target.value })} placeholder="Hours Worked" required />
-        <button type="submit">Add Employee</button>
-      </form>
+      {showUpdateEmployeeIframe && selectedEmployee && (
+        <div className="iframe-overlay">
+          <div className="iframe-container">
+            <button className="close-button" onClick={closeIframe}>✖</button>
+            <AddEmployeeForm
+              onAddEmployee={(updatedData) => updateEmployee(selectedEmployee._id, updatedData)}
+              initialEmployeeData={selectedEmployee}
+              isUpdate={true}
+              onClose={closeIframe}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

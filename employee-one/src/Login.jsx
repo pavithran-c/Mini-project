@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './Authen';
@@ -10,7 +10,17 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // Get the login function
+  const { login } = useAuth();
+
+  useEffect(() => {
+    // Add class to body on mount
+    document.body.classList.add('login-page');
+
+    // Cleanup function to remove class on unmount
+    return () => {
+      document.body.classList.remove('login-page');
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +35,7 @@ const Login = () => {
     setMessage(''); // Clear previous messages
 
     try {
-      const response = await axios.post('http://localhost:5002/login', {
+      const response = await axios.post('http://localhost:5000/login', {
         username,
         password,
       });
@@ -45,30 +55,33 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Username:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            
-          />
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      {message && <p className={`message ${loading ? 'loading' : ''}`}>{message}</p>}
+      <div className="box">
+        <h2>Login</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="inputBox">
+            <input
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <span>Username</span>
+          </div>
+          <div className="inputBox">
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <span>Password</span>
+          </div>
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        {message && <p className={`message ${loading ? 'loading' : ''}`}>{message}</p>}
+      </div>
     </div>
   );
 };

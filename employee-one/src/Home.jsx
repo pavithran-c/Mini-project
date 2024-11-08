@@ -1,54 +1,81 @@
-import React from 'react';
-import axois from 'axios';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './Home.css';
-const fetch= async() =>{
-  const response=await axois.get("https://localhost:5000/home");
-  console.log(response);
-}
+
 const HomeAfterLogin = () => {
+  const [employeeCount, setEmployeeCount] = useState(0);
+  const [ongoingProjects, setOngoingProjects] = useState([]);
+  const [completedProjects, setCompletedProjects] = useState(0);
+
+  useEffect(() => {
+    // Fetch data for the dashboard cards and ongoing projects
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch employees data
+        const employeesResponse = await axios.get('http://localhost:5000/employees');
+        setEmployeeCount(employeesResponse.data.length);
+
+        // Fetch projects data
+        const projectsResponse = await axios.get('http://localhost:5000/projects');
+        const ongoing = projectsResponse.data.filter(project => project.status === 'Ongoing');
+        setOngoingProjects(ongoing);
+        setCompletedProjects(projectsResponse.data.filter(project => project.status === 'Done').length);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
-    <div>
-    <div className="home-after-login-container">
-      <nav className="navbar">
-        <div className="logo">EMS</div>
-        <ul>
-          <li><Link to="/home">Home</Link></li>
-          <li><Link to="/employees">Employees</Link></li>
-          <li><Link to="/performance">Performance</Link></li>
-          <li><Link to="/reports">Reports</Link></li>
-          <li><Link to="/logout">Logout</Link></li>
-        </ul>
-      </nav>
-
-      <header className="home-hero">
-        <div className="home-hero-text">
-          <h1>Welcome Back!</h1>
-          <p>Manage your employees and track performance efficiently.</p>
+    <div className="dashboard-container">
+      <h2>Employee Management Dashboard</h2>
+      <div className="dashboard-cards">
+        <div className="card">
+          <h3>Total Employees</h3>
+          <p>{employeeCount}</p>
         </div>
-      </header>
-
-      <section className="dashboard-section">
-        <h2>Dashboard Overview</h2>
-        <div className="dashboard-cards">
-          <div className="card">
-            <h3>Total Employees</h3>
-            <p>150</p>
-          </div>
-          <div className="card">
-            <h3>Active Projects</h3>
-            <p>12</p>
-          </div>
-          <div className="card">
-            <h3>Pending Reviews</h3>
-            <p>8</p>
-          </div>
+        <div className="card">
+          <h3>Ongoing Projects</h3>
+          <p>{ongoingProjects.length}</p>
         </div>
+        <div className="card">
+          <h3>Completed Projects</h3>
+          <p>{completedProjects}</p>
+        </div>
+      </div>
+
+      <section className="ongoing-projects-section">
+        <h3>Ongoing Projects</h3>
+        <table className="project-table">
+          <thead>
+            <tr>
+              <th>Project Name</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+            </tr>
+          </thead>
+          <tbody>
+              {ongoingProjects.length > 0 ? (
+                ongoingProjects.map((project, index) => (
+                <React.Fragment key={project.id || `project-${index}`}>
+              <tr>
+                <td>{project.name}</td>
+                <td>{project.startTime}</td>
+                <td>{project.endTime}</td>
+              </tr>
+            </React.Fragment>
+                ))
+                ) : (
+              <tr>
+              <td colSpan="3">No ongoing projects found.</td>
+            </tr>
+              )}
+              </tbody>
+
+        </table>
       </section>
-    </div>
-    <footer className="footer">
-        <h4>&copy; 2024 Employee Management System. All Rights Reserved.</h4>
-      </footer>
     </div>
   );
 };

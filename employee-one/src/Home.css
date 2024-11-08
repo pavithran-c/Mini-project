@@ -1,140 +1,104 @@
-/* Container for the entire page */
 .home-after-login-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* Full height of the viewport */
-  font-family: 'Arial', sans-serif;
-  background-color: #f4f4f9;
-  color: #333;
+  display: flex; /* Use flexbox for layout */
+  min-height: 100vh; /* Ensure the container takes full height */
+  background: #f4f4f4; /* Background color for the entire page */
 }
 
-/* Navbar styling */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  background-color: #007bff;
+  width: 250px; /* Set a fixed width for the navbar */
+  background: #1c1c1c; /* Background color for the navbar */
+  padding: 20px;
   color: white;
+  position: fixed; /* Fix the navbar */
+  height: 100%; /* Full height */
+  transition: width 0.3s; /* Smooth transition for width change */
+}
+
+.navbar.collapsed {
+  width: 70px; /* Width when collapsed */
 }
 
 .logo {
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 24px;
+  color: #45f3ff; /* Logo color */
+  margin-bottom: 30px; /* Space below the logo */
+  text-align: center; /* Center logo when collapsed */
 }
 
-.navbar ul {
-  list-style: none;
-  display: flex;
-  margin: 0;
-  padding: 0;
-}
-
-.navbar li {
-  margin-left: 20px;
-}
-
-.navbar a {
-  text-decoration: none;
-  color: white;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.navbar a:hover {
-  color: #f8f9fa;
-}
-
-/* Hero section */
-.home-hero {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  background-image: url('/path/to/your/background-image.jpg'); /* Add your background image path */
-  background-size: cover;
-  background-position: center;
-  color: white;
-  text-align: center;
-  padding: 20px;
-}
-
-.home-hero-text {
-  backdrop-filter: blur(8px);
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 30px;
-  border-radius: 10px;
-}
-
-.home-hero h1 {
-  font-size: 48px;
-  margin-bottom: 10px;
-}
-
-.home-hero p {
+.toggle-btn {
+  background: none; /* Remove default button styles */
+  border: none;
+  color: #ffffff;
+  cursor: pointer; /* Pointer cursor on hover */
   font-size: 18px;
+  margin-bottom: 20px; /* Space below the toggle button */
+  display: block; /* Make it a block element */
+  text-align: center; /* Center toggle button text */
 }
 
-/* Dashboard section */
+ul {
+  list-style: none; /* Remove bullet points */
+  padding: 0;
+  display: flex;
+  flex-direction: column; /* Stack links vertically */
+}
+
+li {
+  margin: 15px 0; /* Space between links */
+  text-align: center; /* Center links when collapsed */
+}
+
+li a {
+  color: #ffffff; /* Link color */
+  text-decoration: none; /* Remove underline */
+  transition: color 0.3s; /* Smooth transition for hover effect */
+  display: block; /* Make the link a block element */
+}
+
+li a:hover {
+  color: #45f3ff; /* Change color on hover */
+}
+
+.content {
+  margin-left: 250px; /* Leave space for the navbar */
+  padding: 20px; /* Padding around the content */
+  transition: margin-left 0.3s; /* Smooth transition for margin change */
+}
+
+.content.collapsed {
+  margin-left: 70px; /* Space for content when navbar is collapsed */
+}
+
+.home-hero {
+  background: #ffffff; /* White background for the hero section */
+  border-radius: 8px; /* Rounded corners */
+  padding: 20px;
+  margin-bottom: 20px; /* Space below the hero section */
+}
+
 .dashboard-section {
-  padding: 40px 20px;
-  text-align: center;
-  flex-grow: 1; /* Allow section to grow and take available space */
-}
-
-.dashboard-section h2 {
-  font-size: 36px;
-  margin-bottom: 20px;
-  color: #333;
+  margin-top: 20px; /* Space above the dashboard section */
 }
 
 .dashboard-cards {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: flex; /* Use flexbox for card layout */
+  gap: 20px; /* Space between cards */
 }
 
 .card {
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex: 1; /* Allow cards to grow equally */
+  background: #45f3ff; /* Card background color */
+  color: #23242a; /* Text color */
   padding: 20px;
-  width: 250px; /* Set a fixed width for cards */
-  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 8px; /* Rounded corners for cards */
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.card h3 {
-  font-size: 24px;
-  margin-bottom: 10px;
-}
-
-.card p {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-/* Footer section - Fixed to bottom */
 .footer {
-  background-color: #007bff;
-  color: white;
-  text-align: center;
-  padding: 20px;
-  position: fixed; /* Make footer fixed at the bottom */
+  text-align: center; /* Center footer text */
+  padding: 10px; /* Padding around footer */
+  background: #1c1c1c; /* Footer background */
+  color: white; /* Footer text color */
+  position: relative;
   bottom: 0;
-  left: 0;
-  width: 100%; /* Ensure it spans the full width */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .dashboard-cards {
-      flex-direction: column;
-      align-items: center;
-  }
+  width: 100%;
 }
