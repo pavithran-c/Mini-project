@@ -1,0 +1,97 @@
+/* Layout container */
+.layout-container {
+    display: flex; /* Use flexbox for layout */
+    min-height: 100vh; /* Ensure the container takes full height */
+    background: #f4f4f4; /* Background color for the entire page */
+    position: relative; /* Position relative for the toggle button */
+}
+
+/* Reversed C-shaped Navbar */
+.navbar {
+    width: 250px; /* Fixed width for the navbar */
+    background: #1c1c1c; /* Background color for the navbar */
+    padding: 20px;
+    color: white;
+    position: fixed;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust to center vertically */
+    height: 60%; /* Adjust height for partial view */
+    transition: transform 0.3s ease;
+    border-top-right-radius: 150px; /* Large radius for the top-right corner */
+    border-bottom-right-radius: 150px; /* Large radius for the bottom-right corner */
+}
+
+/* Collapsed Navbar */
+.navbar.collapsed {
+    transform: translate(-300%, -50%); /* Move navbar out of view when collapsed */
+}
+
+/* Logo styling */
+.logo {
+    font-size: 24px;
+    color: #45f3ff; /* Logo color */
+    margin-bottom: 30px; /* Space below the logo */
+    text-align: center;
+}
+
+/* Toggle button */
+.toggle-btn {
+    position: fixed;
+    top: 50%; /* Center it vertically */
+    left: 0;
+    transform: translateY(-50%);
+    background: #45f3ff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s;
+}
+
+.toggle-btn:hover {
+    background: #3ab2d9;
+}
+
+/* Navbar links */
+ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center links within navbar */
+    height: 100%; /* Ensure links take up full navbar height */
+}
+
+li {
+    margin: 15px 0;
+    text-align: left; /* Align text to the left */
+    padding-left: 40%; /* Adjust padding to position links */
+}
+
+li a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s;
+    display: block;
+}
+
+li a:hover {
+    color: #45f3ff;
+}
+
+/* Content */
+.content {
+    margin-left: 250px; /* Leave space for the navbar */
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+.content.collapsed {
+    margin-left: 0;
+}
