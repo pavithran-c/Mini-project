@@ -4,10 +4,7 @@ import './Wel.css';
 
 const Welcome = () => {
   useEffect(() => {
-    // Add class to body on mount
     document.body.classList.add('welcome-page');
-
-    // Cleanup function to remove class on unmount
     return () => {
       document.body.classList.remove('welcome-page');
     };

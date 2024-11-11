@@ -38,12 +38,21 @@ const employeeSchema = new mongoose.Schema({
   hoursWorked: { type: Number, default: 0 },  // Field to store total hours worked
 });
 
-// Helper function to calculate total salary
-const calculateTotalSalary = (employee) => {
-  // You can also add a per hour rate if needed
-  const hourlyRate = 50;  // Example hourly rate, adjust as necessary
-  const totalSalary = employee.basicPay + employee.allowances - employee.deductions + (hourlyRate * employee.hoursWorked);
-  return totalSalary;
+const leaveSchema = new mongoose.Schema({
+  employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
+  employeeName: String,
+  leaveType: { type: String, required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  reason: { type: String, required: true },
+  status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
+});
+
+const calculateTotalSalary = ({ basicPay, allowances, hoursWorked }) => {
+  const basic = parseFloat(basicPay || 0);
+  const allowance = parseFloat(allowances || 0);
+  const hours = parseFloat(hoursWorked || 0);
+  return (basic * hours) + allowance;
 };
 const Employee = mongoose.model('Employee', employeeSchema);
 
@@ -59,25 +68,20 @@ const attendanceSchema = new mongoose.Schema({
 
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
-// Helper function to update hours worked in Employee collection based on attendance
 const updateEmployeeHoursWorked = async (employeeId) => {
   try {
-    // Sum hoursWorked from all attendance records for this employee
     const totalHoursWorked = await Attendance.aggregate([
       { $match: { employeeId: new mongoose.Types.ObjectId(employeeId) } },
       { $group: { _id: null, totalHours: { $sum: "$hoursWorked" } } },
     ]);
 
     const hoursWorked = totalHoursWorked[0] ? totalHoursWorked[0].totalHours : 0;
-
-    // Update hoursWorked in Employee collection
     await Employee.findByIdAndUpdate(employeeId, { hoursWorked }, { new: true });
   } catch (error) {
     console.error("Failed to update hours worked for employee:", error);
   }
 };
 
-// MySQL Login API
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -99,32 +103,33 @@ app.post('/login', async (req, res) => {
   });
 });
 
-// API to get all employees
 app.get('/employees', async (req, res) => {
   try {
     const employees = await Employee.find();
     res.json(employees);
   } catch (error) {
+    console.error('Error fetching employees:', error);
     res.status(500).json({ error: 'Error fetching employees' });
   }
 });
 
-// Add a new employee
 app.post('/employees', async (req, res) => {
   try {
-    const newEmployeeData = req.body;
-    const totalSalary = calculateTotalSalary(newEmployeeData);
-    
-    // Add total salary to the employee object
-    const newEmployee = new Employee({ ...newEmployeeData, totalSalary });
+    const { employeeId, name, position, basicPay, allowances, hoursWorked } = req.body;
+
+    if (!employeeId || !name || !position) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+    const totalSalary = calculateTotalSalary({ basicPay, allowances, hoursWorked });
+    const newEmployee = new Employee({ employeeId, name, position, basicPay, allowances, hoursWorked, totalSalary });
     await newEmployee.save();
+    
     res.status(201).json(newEmployee);
   } catch (error) {
+    console.error('Error adding employee:', error);
     res.status(500).json({ error: 'Error adding employee' });
   }
 });
-
-// Update an employee
 app.put('/employees/:id', async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -138,12 +143,12 @@ app.put('/employees/:id', async (req, res) => {
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
-
-    // Calculate the total salary after update
     const totalSalary = calculateTotalSalary({ ...employee.toObject(), ...updatedData });
-
-    // Update employee record
-    const updatedEmployee = await Employee.findByIdAndUpdate(id, { ...updatedData, totalSalary }, { new: true });
+    const updatedEmployee = await Employee.findByIdAndUpdate(
+      id,
+      { ...updatedData, totalSalary },
+      { new: true }
+    );
     res.json(updatedEmployee);
   } catch (error) {
     console.error('Error updating employee:', error);
@@ -151,7 +156,6 @@ app.put('/employees/:id', async (req, res) => {
   }
 });
 
-// Delete an employee
 app.delete('/employees/:id', async (req, res) => {
   try {
     const employee = await Employee.findByIdAndDelete(req.params.id);
@@ -162,7 +166,6 @@ app.delete('/employees/:id', async (req, res) => {
   }
 });
 
-// Start attendance - records entry time
 app.post('/attendance/start', async (req, res) => {
   const { employeeId } = req.body;
   if (!employeeId) {
@@ -323,8 +326,115 @@ app.put('/projects/:id', async (req, res) => {
     res.status(500).json({ error: 'Error adding project', details: error.message });
   }  
 });
+const Leave = mongoose.model('Leave', leaveSchema);
 
-// Start server
+// Add a leave application
+// Assuming the backend is using Express.js
+app.post('/leaves', async (req, res) => {
+  const { employeeId, employeeName, leaveType, startDate, endDate, reason } = req.body;
+
+  try {
+    const newLeaveRequest = new Leave({
+      employeeId,
+      employeeName,  // Store the employee's name
+      leaveType,
+      startDate,
+      endDate,
+      reason,
+      status: 'Pending',  // Default status
+    });
+
+    await newLeaveRequest.save();
+
+    res.status(201).json(newLeaveRequest);
+  } catch (error) {
+    console.error('Error submitting leave application:', error);
+    res.status(500).json({ message: 'Error submitting leave application' });
+  }
+});
+
+
+// Get all leave applications (for admins or HR)
+app.get('/leaves', async (req, res) => {
+  try {
+    const leaves = await Leave.find().populate('employeeId', 'name position');
+    res.json(leaves);
+  } catch (error) {
+    console.error('Error fetching leave applications:', error);
+    res.status(500).json({ message: 'Error fetching leave applications' });
+  }
+});
+
+// Get leave applications for a specific employee
+app.get('/leaves/:employeeId', async (req, res) => {
+  const { employeeId } = req.params;
+  try {
+    const leaves = await Leave.find({ employeeId }).populate('employeeId', 'name position');
+    res.json(leaves);
+  } catch (error) {
+    console.error('Error fetching leave applications:', error);
+    res.status(500).json({ message: 'Error fetching leave applications' });
+  }
+});
+
+// Approve or reject leave application
+app.put('/leaves/:id', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // Accepts 'Approved' or 'Rejected'
+
+  if (!['Approved', 'Rejected'].includes(status)) {
+    return res.status(400).json({ message: 'Invalid status' });
+  }
+
+  try {
+    const updatedLeave = await Leave.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updatedLeave) {
+      return res.status(404).json({ message: 'Leave not found' });
+    }
+    res.json(updatedLeave);
+  } catch (error) {
+    console.error('Error updating leave application status:', error);
+    res.status(500).json({ message: 'Error updating leave application status' });
+  }
+});
+
+app.put('/leaves/employee/:employeeId', async (req, res) => {
+  const { employeeId } = req.params; // Get employeeId from the route parameter
+  const { status } = req.body; // Get the new status from the request body
+
+  if (!['Approved', 'Rejected'].includes(status)) {
+    return res.status(400).json({ message: 'Invalid status' });
+  }
+
+  try {
+    const updatedLeave = await Leave.findOneAndUpdate(
+      { _id: employeeId },  
+      { status },                  
+      { new: true }              
+    );
+
+    if (!updatedLeave) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
+    res.json(updatedLeave);  // Send back the updated leave request
+    console.log(updatedLeave); // Optional: log the updated leave request for debugging
+  } catch (error) {
+    console.error('Error updating leave status:', error);
+    res.status(500).json({ message: 'Error updating leave status' });
+  }
+});
+
+
+app.get('/leave-requests/pending', async (req, res) => {
+  try {
+    const pendingRequests = await Leave.find({ status: 'Pending' });
+    res.send(pendingRequests);
+  } catch (error) {
+    res.status(500).send('Error retrieving pending leave requests');
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

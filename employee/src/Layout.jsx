@@ -14,9 +14,6 @@ const Layout = ({ children }) => {
       <nav className={`navbar ${isCollapsed ? 'collapsed' : ''}`}>
         <ul>
           <li><Link to="/home">Home</Link></li>
-          <li><Link to="/employees">Employees</Link></li>
-          <li><Link to="/attendance">Attendance</Link></li>
-          <li><Link to="/projects">Projects</Link></li>
           <li><Link to="/leave">Leave</Link></li>
           <li><Link to="/logout">Logout</Link></li>
         </ul>

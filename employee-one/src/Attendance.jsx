@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './Attendance.css'; // Import the CSS file
+import './Attendance.css'; 
 
 const Attendance = () => {
   const [employees, setEmployees] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); 
 
   useEffect(() => {
     fetchEmployees();
-    fetchAttendanceHistory(); // Initial fetch
+    fetchAttendanceHistory(); 
   }, []);
 
   useEffect(() => {
-    fetchAttendanceHistory(); // Fetch when date changes
+    fetchAttendanceHistory();
   }, [date]);
 
   const fetchEmployees = async () => {
@@ -35,7 +35,7 @@ const Attendance = () => {
         employeeId,
       });
       console.log('Entry time marked:', response.data);
-      fetchAttendanceHistory(); // Refresh attendance history
+      fetchAttendanceHistory(); 
     } catch (error) {
       console.error('Error marking entry time:', error);
       alert('Error marking entry time: ' + (error.response?.data?.message || error.message));
@@ -48,7 +48,7 @@ const Attendance = () => {
         employeeId,
       });
       console.log('Exit time marked:', response.data);
-      fetchAttendanceHistory(); // Refresh attendance history
+      fetchAttendanceHistory(); 
     } catch (error) {
       console.error('Error marking exit time:', error);
       alert('Error marking exit time: ' + (error.response?.data?.message || error.message));

@@ -1,4 +1,3 @@
-// AddProjectModal.js
 import React from 'react';
 import './AddProjectModal.css';
 import AddProjectForm from './AddProjectForm';

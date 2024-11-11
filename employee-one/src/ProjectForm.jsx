@@ -9,19 +9,15 @@ const ProjectForm = () => {
   const [ongoingProjects, setOngoingProjects] = useState([]);
   const [doneProjects, setDoneProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Fetch Projects and Employees on component mount
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
   }, []);
 
-  // Fetch all projects from the server
   const fetchProjects = async () => {
     try {
       const response = await axios.get('http://localhost:5000/projects');
       const ongoing = response.data.filter((project) => project.status === 'Ongoing');
-      console.log(ongoing);
       const done = response.data.filter((project) => project.status === 'Done');
       setOngoingProjects(ongoing);
       setDoneProjects(done);
@@ -30,7 +26,6 @@ const ProjectForm = () => {
     }
   };
 
-  // Fetch all employees from the server
   const fetchEmployees = async () => {
     try {
       const response = await axios.get('http://localhost:5000/employees');
@@ -40,21 +35,18 @@ const ProjectForm = () => {
     }
   };
 
-  // Add a new project
   const handleAddProject = async (projectData) => {
     try {
       await axios.post('http://localhost:5000/projects', {
         ...projectData,
-        employeeIds: projectData.employees,  // Ensure this is the array of employee IDs
+        employeeIds: projectData.employees,  
       });
-      fetchProjects(); // Refresh both ongoing and done projects
+      fetchProjects(); 
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error adding new project:', error);
     }
   };
-
-  // Mark a project as done
   const handleMarkProjectAsDone = async (id) => {
     try {
       await axios.put(`http://localhost:5000/projects/${id}`, { status: 'Done' });
@@ -74,7 +66,7 @@ const ProjectForm = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddProject={handleAddProject}
-        employees={employees}  // Ensure employees list is passed
+        employees={employees}  
       />
       <OngoingProjectsList
         ongoingProjects={ongoingProjects}

@@ -1,4 +1,3 @@
-// OngoingProjectsList.js
 import React from 'react';
 import './OngoingProjectsList.css';
 const OngoingProjectsList = ({ ongoingProjects, doneProjects, onMarkAsDone }) => (
