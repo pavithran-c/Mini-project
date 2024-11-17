@@ -1,25 +1,20 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import mysql from 'mysql';
-import bcrypt from 'bcryptjs';
-import bodyParser from 'body-parser';
+const express=require( 'express');
+const mongoose=require('mongoose');
+const cors=require('cors');
+const bcrypt=require('bcryptjs');
+const bodyParser=require('body-parser');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
 // MySQL connection for login system
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '06456943',  // Update your MySQL password here
-  database: 'login',     // MySQL database name for user credentials
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 });
 
-db.connect(err => {
-  if (err) throw err;
-  console.log('MySQL connected...');
-});
+// Create the User model
+const User = mongoose.model('User', userSchema);
 
 // MongoDB connection for employee, attendance, and project management
 mongoose.connect('mongodb://localhost:27017/employeeDB')
@@ -81,26 +76,28 @@ const updateEmployeeHoursWorked = async (employeeId) => {
     console.error("Failed to update hours worked for employee:", error);
   }
 };
-
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
-  const query = 'SELECT * FROM users WHERE username = ?';
-  db.query(query, [username], (err, results) => {
-    if (err) throw err;
-    if (results.length === 0) {
+  try {
+    // Find the user by username
+    const user = await User.findOne({ username });
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const user = results[0];
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) throw err;
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-      res.json({ message: 'Login successful' });
-    });
-  });
+    // Compare the provided password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // If passwords match
+    res.json({ message: 'Login successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 app.get('/employees', async (req, res) => {
